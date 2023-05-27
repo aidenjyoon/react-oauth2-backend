@@ -50,6 +50,7 @@ passport.use(
     function (accessToken: any, refreshToken: any, profile: any, cb: any) {
       // Called on Successful Authentication!
       // Insert into Database
+      console.log("successfully logged in");
       console.log(profile);
       cb(null, profile);
     }
@@ -70,8 +71,8 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
-    // Successful authentication, redirect to home
-    res.redirect("/");
+    // Successful authentication, redirect to frontend homepage
+    res.redirect("http://localhost:3000");
   }
 );
 
