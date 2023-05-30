@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import session from "express-session";
 import passport from "passport";
+import User from "./User";
+import { interfaceUser } from "./types";
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const TwitterStrategy = require("passport-twitter").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
@@ -55,12 +57,30 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
     },
-    function (accessToken: any, refreshToken: any, profile: any, cb: any) {
-      // Called on Successful Authentication!
-      // Insert into Database
-      console.log("successfully logged in");
-      console.log(profile);
-      cb(null, profile);
+    async function (
+      accessToken: any,
+      refreshToken: any,
+      profile: any,
+      cb: any
+    ) {
+      // identify unique user in db
+      try {
+        const userData: interfaceUser = await User.findOne({
+          googleId: profile.id,
+        });
+
+        // if there's no user, create one
+        if (!userData) {
+          const newUser = new User({
+            googleId: profile.id,
+            username: profile.name.givenName,
+          });
+
+          await newUser.save();
+        }
+      } catch (err) {
+        console.log(err);
+      }
     }
   )
 );
