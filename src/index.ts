@@ -57,20 +57,11 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
     },
-    async function (
-      accessToken: any,
-      refreshToken: any,
-      profile: any,
-      cb: any
-    ) {
-      // identify unique user in db
+    async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
-        const userData: interfaceUser = await User.findOne({
-          googleId: profile.id,
-        });
+        const doc = await User.findOne({ googleId: profile.id });
 
-        // if there's no user, create one
-        if (!userData) {
+        if (!doc) {
           const newUser = new User({
             googleId: profile.id,
             username: profile.name.givenName,
@@ -78,9 +69,36 @@ passport.use(
 
           await newUser.save();
         }
+        // Continue with the callback function or return the user object
+        // based on your implementation
+        // cb(null, doc);
       } catch (err) {
-        console.log(err);
+        console.error(
+          "Error while trying to save google user to database: ",
+          err
+        );
+        // cb(err, null);
       }
+      //   // identify unique user in db
+      //   try {
+      //     const userData: interfaceUser = await User.findOne({
+      //       googleId: profile.id,
+      //     });
+
+      //     console.log(userData);
+
+      //     // if there's no user, create one
+      //     if (!userData) {
+      //       const newUser = new User({
+      //         googleId: profile.id,
+      //         username: profile.name.givenName,
+      //       });
+
+      //       await newUser.save();
+      //     }
+      //   } catch (err) {
+      //     console.log(err);
+      //   }
     }
   )
 );
