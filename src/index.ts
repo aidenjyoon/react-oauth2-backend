@@ -30,6 +30,7 @@ mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGOD
 // Middleware
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+
 app.use(
   session({
     secret: "secretcode",
@@ -38,15 +39,21 @@ app.use(
   })
 );
 
+// Passport middleware initialization
+app.use(passport.initialize());
+app.use(passport.session());
+
 // taking entire user object we get from the authentication method
 // and storing them into sessions
 passport.serializeUser((user: any, done: any) => {
+  console.log(user);
   return done(null, user);
 });
 
 // taking entire user object from the session and attaching it to the req.user object
 // (Bad. we should only store user ID in better apps)
 passport.deserializeUser((user: any, done: any) => {
+  console.log(user);
   return done(null, user);
 });
 
@@ -55,30 +62,36 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
+      callbackURL: "http://localhost:4000/auth/google/callback",
     },
-    async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
-      try {
-        const doc = await User.findOne({ googleId: profile.id });
+    function (accessToken: any, refreshToken: any, profile: any, cb: any) {
+      console.log("successfully logged in");
+      console.log(profile);
+      cb(null, profile);
 
-        if (!doc) {
-          const newUser = new User({
-            googleId: profile.id,
-            username: profile.name.givenName,
-          });
+      //////////////// following chatgpt
+      // try {
+      //   const doc = await User.findOne({ googleId: profile.id });
 
-          await newUser.save();
-        }
-        // Continue with the callback function or return the user object
-        // based on your implementation
-        // cb(null, doc);
-      } catch (err) {
-        console.error(
-          "Error while trying to save google user to database: ",
-          err
-        );
-        // cb(err, null);
-      }
+      //   if (!doc) {
+      //     const newUser = new User({
+      //       googleId: profile.id,
+      //       username: profile.name.givenName,
+      //     });
+
+      //     await newUser.save();
+      //   }
+      //   // Continue with the callback function or return the user object
+      //   // based on your implementation
+      //   // cb(null, doc);
+      // } catch (err) {
+      //   console.error(
+      //     "Error while trying to save google user to database: ",
+      //     err
+      //   );
+      //   // cb(err, null);
+      // }
+      //////////////////////// my initial effort
       //   // identify unique user in db
       //   try {
       //     const userData: interfaceUser = await User.findOne({
@@ -108,7 +121,7 @@ passport.use(
     {
       consumerKey: process.env.TWITTER_CONSUMER_KEY,
       consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-      callbackURL: "/auth/twitter/callback",
+      callbackURL: "http://localhost:4000/auth/twitter/callback",
     },
     function (accessToken: any, refreshToken: any, profile: any, cb: any) {
       // Called on Successful Authentication!
@@ -125,7 +138,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: "/auth/github/callback",
+      callbackURL: "http://localhost:4000/auth/github/callback",
     },
     function (accessToken: any, refreshToken: any, profile: any, cb: any) {
       // Called on Successful Authentication!
@@ -142,7 +155,7 @@ passport.use(
     {
       clientID: process.env.TWITCH_CLIENT_ID,
       clientSecret: process.env.TWITCH_CLIENT_SECRET,
-      callbackURL: "/auth/twitch/callback",
+      callbackURL: "http://localhost:4000/auth/twitch/callback",
       scope: "user_read",
     },
     function (accessToken: any, refreshToken: any, profile: any, cb: any) {
@@ -221,7 +234,11 @@ app.get("/", (req, res) => {
 // receives all the data of user because it gets attached to the deserialized function
 // gets called by context
 app.get("/getuser", (req, res) => {
-  res.send(req.user);
+  if (req.user) {
+    res.send(req.user);
+  } else {
+    res.status(401).send("Error: User not authenticated");
+  }
 });
 
 app.listen(4000, () => {
