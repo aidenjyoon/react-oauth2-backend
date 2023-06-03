@@ -46,16 +46,24 @@ app.use(passport.session());
 // taking entire user object we get from the authentication method
 // and storing them into sessions
 passport.serializeUser((user: any, done: any) => {
-  console.log(user);
-  return done(null, user);
+  return done(null, user._id);
 });
 
 // taking entire user object from the session and attaching it to the req.user object
 // (Bad. we should only store user ID in better apps)
-passport.deserializeUser((user: any, done: any) => {
-  console.log(user);
-  return done(null, user);
+passport.deserializeUser(async (id: string, done: any) => {
+  try {
+    const doc = await User.findById(id);
+    return done(null, doc);
+  } catch (err) {
+    console.error(err, "Unable to find the user");
+  }
 });
+
+// Work Flow w/serialize deserialize
+// Login with Google
+// Create a user in MongoDB
+// Serialize & Deserialize -> grab that user from the database and return him
 
 passport.use(
   new GoogleStrategy(
@@ -75,6 +83,7 @@ passport.use(
           });
 
           await newUser.save();
+          cb(null, newUser);
         }
         // Continue with the callback function or return the user object
         // based on your implementation
@@ -110,6 +119,7 @@ passport.use(
           });
 
           await newUser.save();
+          cb(null, newUser);
         }
         // Continue with the callback function or return the user object
         // based on your implementation
@@ -145,6 +155,7 @@ passport.use(
           });
 
           await newUser.save();
+          cb(null, newUser);
         }
         // Continue with the callback function or return the user object
         // based on your implementation
@@ -168,12 +179,31 @@ passport.use(
       callbackURL: "http://localhost:4000/auth/twitch/callback",
       scope: "user_read",
     },
-    function (accessToken: any, refreshToken: any, profile: any, cb: any) {
-      // Called on Successful Authentication!
-      // Insert into Database
-      console.log("successfully logged in");
-      console.log(profile);
-      cb(null, profile);
+    async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
+      try {
+        // find user
+        const doc = await User.findOne({ twitchId: profile.id });
+
+        // create new user if not found
+        if (!doc) {
+          const newUser = new User({
+            twitchId: profile.id,
+            username: profile.login,
+          });
+
+          await newUser.save();
+          cb(null, newUser);
+        }
+        // Continue with the callback function or return the user object
+        // based on your implementation
+        cb(null, doc);
+      } catch (err) {
+        console.error(
+          "Error while trying to save twitter user to database: ",
+          err
+        );
+        cb(err, null);
+      }
     }
   )
 );
@@ -230,7 +260,7 @@ app.get("/auth/twitch", passport.authenticate("twitch"));
 
 app.get(
   "/auth/twitch/callback",
-  passport.authenticate("twitch", { failureRedirect: "/" }),
+  passport.authenticate("twitch", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect home.
     res.redirect("http://localhost:3000");
