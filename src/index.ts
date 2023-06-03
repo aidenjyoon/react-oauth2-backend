@@ -64,54 +64,28 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:4000/auth/google/callback",
     },
-    function (accessToken: any, refreshToken: any, profile: any, cb: any) {
-      console.log("successfully logged in");
-      console.log(profile);
-      cb(null, profile);
+    async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
+      try {
+        const doc = await User.findOne({ googleId: profile.id });
 
-      //////////////// following chatgpt
-      // try {
-      //   const doc = await User.findOne({ googleId: profile.id });
+        if (!doc) {
+          const newUser = new User({
+            googleId: profile.id,
+            username: profile.name.givenName,
+          });
 
-      //   if (!doc) {
-      //     const newUser = new User({
-      //       googleId: profile.id,
-      //       username: profile.name.givenName,
-      //     });
-
-      //     await newUser.save();
-      //   }
-      //   // Continue with the callback function or return the user object
-      //   // based on your implementation
-      //   // cb(null, doc);
-      // } catch (err) {
-      //   console.error(
-      //     "Error while trying to save google user to database: ",
-      //     err
-      //   );
-      //   // cb(err, null);
-      // }
-      //////////////////////// my initial effort
-      //   // identify unique user in db
-      //   try {
-      //     const userData: interfaceUser = await User.findOne({
-      //       googleId: profile.id,
-      //     });
-
-      //     console.log(userData);
-
-      //     // if there's no user, create one
-      //     if (!userData) {
-      //       const newUser = new User({
-      //         googleId: profile.id,
-      //         username: profile.name.givenName,
-      //       });
-
-      //       await newUser.save();
-      //     }
-      //   } catch (err) {
-      //     console.log(err);
-      //   }
+          await newUser.save();
+        }
+        // Continue with the callback function or return the user object
+        // based on your implementation
+        cb(null, doc);
+      } catch (err) {
+        console.error(
+          "Error while trying to save google user to database: ",
+          err
+        );
+        cb(err, null);
+      }
     }
   )
 );
@@ -234,11 +208,7 @@ app.get("/", (req, res) => {
 // receives all the data of user because it gets attached to the deserialized function
 // gets called by context
 app.get("/getuser", (req, res) => {
-  if (req.user) {
-    res.send(req.user);
-  } else {
-    res.status(401).send("Error: User not authenticated");
-  }
+  res.send(req.user);
 });
 
 app.listen(4000, () => {
