@@ -97,12 +97,31 @@ passport.use(
       consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
       callbackURL: "http://localhost:4000/auth/twitter/callback",
     },
-    function (accessToken: any, refreshToken: any, profile: any, cb: any) {
-      // Called on Successful Authentication!
-      // Insert into Database
-      console.log("successfully logged in");
-      console.log(profile);
-      cb(null, profile);
+    async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
+      try {
+        // find user
+        const doc = await User.findOne({ twitterId: profile.id });
+
+        // create new user if not found
+        if (!doc) {
+          const newUser = new User({
+            twitterId: profile.id,
+            username: profile.username,
+            displayName: profile.displayName,
+          });
+
+          await newUser.save();
+        }
+        // Continue with the callback function or return the user object
+        // based on your implementation
+        cb(null, doc);
+      } catch (err) {
+        console.error(
+          "Error while trying to save twitter user to database: ",
+          err
+        );
+        cb(err, null);
+      }
     }
   )
 );
