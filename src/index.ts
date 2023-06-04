@@ -277,6 +277,18 @@ app.get("/getuser", (req, res) => {
   res.send(req.user);
 });
 
+app.get("/logout", (req, res) => {
+  if (req.user) {
+    // logout using passport
+    req.logout((err) => {
+      if (err) {
+        console.error(err, "logout failed");
+      }
+    });
+    res.send("logout successful!");
+  }
+});
+
 app.listen(4000, () => {
   console.log("server started");
 });
