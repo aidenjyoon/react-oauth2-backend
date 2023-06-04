@@ -5,7 +5,7 @@ import cors from "cors";
 import session from "express-session";
 import passport from "passport";
 import User from "./User";
-import { interfaceUser } from "./types";
+import { IMongoDBUser, interfaceUser } from "./types";
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const TwitterStrategy = require("passport-twitter").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
@@ -45,7 +45,7 @@ app.use(passport.session());
 
 // taking entire user object we get from the authentication method
 // and storing them into sessions
-passport.serializeUser((user: any, done: any) => {
+passport.serializeUser((user: IMongoDBUser, done: any) => {
   return done(null, user._id);
 });
 
@@ -53,7 +53,7 @@ passport.serializeUser((user: any, done: any) => {
 // (Bad. we should only store user ID in better apps)
 passport.deserializeUser(async (id: string, done: any) => {
   try {
-    const doc = await User.findById(id);
+    const doc: IMongoDBUser = await User.findById(id);
     return done(null, doc);
   } catch (err) {
     console.error(err, "Unable to find the user");
@@ -74,7 +74,7 @@ passport.use(
     },
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
-        const doc = await User.findOne({ googleId: profile.id });
+        const doc: IMongoDBUser = await User.findOne({ googleId: profile.id });
 
         if (!doc) {
           const newUser = new User({
@@ -109,7 +109,7 @@ passport.use(
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
         // find user
-        const doc = await User.findOne({ twitterId: profile.id });
+        const doc: IMongoDBUser = await User.findOne({ twitterId: profile.id });
 
         // create new user if not found
         if (!doc) {
@@ -145,7 +145,7 @@ passport.use(
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
         // find user
-        const doc = await User.findOne({ githubId: profile.id });
+        const doc: IMongoDBUser = await User.findOne({ githubId: profile.id });
 
         // create new user if not found
         if (!doc) {
@@ -182,7 +182,7 @@ passport.use(
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
         // find user
-        const doc = await User.findOne({ twitchId: profile.id });
+        const doc: IMongoDBUser = await User.findOne({ twitchId: profile.id });
 
         // create new user if not found
         if (!doc) {
