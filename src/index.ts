@@ -70,7 +70,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:4000/auth/google/callback",
+      callbackURL: "/auth/google/callback",
     },
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
@@ -104,7 +104,7 @@ passport.use(
     {
       consumerKey: process.env.TWITTER_CONSUMER_KEY,
       consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-      callbackURL: "http://localhost:4000/auth/twitter/callback",
+      callbackURL: "/auth/twitter/callback",
     },
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
@@ -140,7 +140,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: "http://localhost:4000/auth/github/callback",
+      callbackURL: "/auth/github/callback",
     },
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
@@ -176,7 +176,7 @@ passport.use(
     {
       clientID: process.env.TWITCH_CLIENT_ID,
       clientSecret: process.env.TWITCH_CLIENT_SECRET,
-      callbackURL: "http://localhost:4000/auth/twitch/callback",
+      callbackURL: "/auth/twitch/callback",
       scope: "user_read",
     },
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
@@ -277,7 +277,7 @@ app.get("/getuser", (req, res) => {
   res.send(req.user);
 });
 
-app.get("/logout", (req, res) => {
+app.get("/auth/logout", (req, res) => {
   if (req.user) {
     // logout using passport
     req.logout((err) => {
@@ -289,6 +289,6 @@ app.get("/logout", (req, res) => {
   }
 });
 
-app.listen(4000, () => {
+app.listen(process.env.PORT || 4000, () => {
   console.log("server started");
 });
