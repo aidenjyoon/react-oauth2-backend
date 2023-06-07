@@ -289,6 +289,9 @@ app.get("/auth/logout", (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 4000, "0.0.0.0", () => {
+const host = "0.0.0.0";
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
+
+app.listen(port, host, () => {
   console.log("server started");
 });
