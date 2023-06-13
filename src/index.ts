@@ -30,7 +30,7 @@ mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGOD
 // Middleware
 app.use(express.json());
 app.use(
-  cors({ origin: "https://reactoauth20.netlify.app/", credentials: true })
+  cors({ origin: "https://reactoauth20.netlify.app", credentials: true })
 );
 
 app.set("trust proxy", 1);
@@ -233,7 +233,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect to frontend homepage
-    res.redirect("https://reactoauth20.netlify.app/");
+    res.redirect("https://reactoauth20.netlify.app");
   }
 );
 
@@ -245,7 +245,7 @@ app.get(
   passport.authenticate("twitter", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect home.
-    res.redirect("https://reactoauth20.netlify.app/");
+    res.redirect("https://reactoauth20.netlify.app");
   }
 );
 
@@ -260,7 +260,7 @@ app.get(
   passport.authenticate("github", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect home.
-    res.redirect("https://reactoauth20.netlify.app/");
+    res.redirect("https://reactoauth20.netlify.app");
   }
 );
 
@@ -272,7 +272,7 @@ app.get(
   passport.authenticate("twitch", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect home.
-    res.redirect("https://reactoauth20.netlify.app/");
+    res.redirect("https://reactoauth20.netlify.app");
   }
 );
 
