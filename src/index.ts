@@ -197,7 +197,7 @@ passport.use(
         if (!doc) {
           const newUser = new User({
             twitchId: profile.id,
-            username: profile.login,
+            username: profile.userName,
           });
 
           await newUser.save();
