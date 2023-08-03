@@ -186,7 +186,7 @@ passport.use(
       clientID: process.env.TWITCH_CLIENT_ID,
       clientSecret: process.env.TWITCH_CLIENT_SECRET,
       callbackURL: "/auth/twitch/callback",
-      scope: "user:read",
+      scope: "user:read:email",
     },
     async (accessToken: any, refreshToken: any, profile: any, cb: any) => {
       try {
