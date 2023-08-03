@@ -208,7 +208,7 @@ passport.use(
         cb(null, doc);
       } catch (err) {
         console.error(
-          "Error while trying to save twitter user to database: ",
+          "Error while trying to save twitch user to database: ",
           err
         );
         cb(err, null);
